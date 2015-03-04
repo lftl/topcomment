@@ -38,7 +38,7 @@
             totalCommentKarma = false;
             topCommentKarma = false;
             $.ajax({
-                url:'http://reddit.com/user/' + user + '/.json?sort=top',
+                url:'http://reddit.com/user/' + user + '/comments.json?sort=top',
                 success: function(data) {
                     topCommentKarma = data.data.children[0].data.score;
                     buildGraph();
