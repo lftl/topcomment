@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<title></title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+</head>
+<body>
+    <form method="get">
+    <label>Username: <input id="user" name="user" /> <button>GO</button></label>
+    </form><br />
+    <span style="display: none" id="loading">Loading...</span>
+    <img style="display: none" id="graph" src="https://chart.googleapis.com/chart?cht=p&chd=t:20,80&chs=200x100" alt="" />
+    <script>
+        var totalCommentKarma = false;
+        var topCommentKarma = false;
+        function buildGraph() {
+            if(totalCommentKarma === false || topCommentKarma === false) {
+                return false;
+            }
+
+
+            console.log(totalCommentKarma);
+            console.log(topCommentKarma);
+            
+            var url = 'https://chart.googleapis.com/chart?cht=p&chs=400x400&chds=a&chdl=Years%20of%20comments|This%20one%20comment%20one%20time&chco=3333ff|ff8800&chd=t:';
+            url += (totalCommentKarma - topCommentKarma) + ',' + topCommentKarma;
+
+            $('#loading').hide();
+            $('#graph').attr('src', url).show();
+        }
+        $('form').submit(function() {
+            $('#loading').show();
+            $('#graph').hide();
+            var user = $('#user').val();
+            window.history.pushState('','', top.location.pathname + '?user=' + user);
+
+            totalCommentKarma = false;
+            topCommentKarma = false;
+            $.ajax({
+                url:'http://reddit.com/user/' + user + '/.json?sort=top',
+                success: function(data) {
+                    topCommentKarma = data.data.children[0].data.score;
+                    buildGraph();
+                },
+                dataType: 'jsonp',
+                jsonp: 'jsonp'
+            });
+
+            $.ajax({
+                url: 'http://reddit.com/user/' + user + '/about.json',
+                success: function(data) {
+                    totalCommentKarma = data.data.comment_karma;
+                    buildGraph();
+                },
+                dataType: 'jsonp',
+                jsonp: 'jsonp'
+            });
+            return false;
+        });
+        
+        var init_user = top.location.search.replace('?user=','');
+        if(init_user !== '') {
+            $('#user').val(init_user);
+            $('form').submit();
+        }
+
+    </script>
+</body>
+</html>
